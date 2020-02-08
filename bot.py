@@ -3,6 +3,7 @@ import sqlite3
 import discord
 import os
 import datetime
+import jishaku
 
 from discord.ext import commands
 
@@ -14,6 +15,7 @@ token = os.getenv("TOKEN")
 async def on_ready():
 	"""Bot startups"""
 	print(f"[Ready]\nLogged in as: {bot.user.name}\nDev: mischievousdev\nStart Time: {datetime.datetime.utcnow()}")
+	bot.load_extension("jishaku")
 	
 @bot.event
 async def on_error(error):
