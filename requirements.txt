@@ -5,3 +5,4 @@ random_password
 jishaku
 python-box
 nekos.py
+googletrans
