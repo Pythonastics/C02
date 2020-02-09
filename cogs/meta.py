@@ -211,7 +211,7 @@ class Meta(commands.Cog):
     @commands.command()
     async def invite(self, ctx):
     	"""Send the bot invite url"""
-    	url = "https://discordapp.com/oauth2/authorize?client_id=675338023222771712&permissions=8&scope=bot"
+    	url = f"https://discordapp.com/oauth2/authorize?client_id={self.bot.user.id}&permissions=8&scope=bot"
     	await ctx.send(url)
     	
     @commands.command()
