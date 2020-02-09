@@ -2,8 +2,8 @@
 import sqlite3
 import discord
 import os
-import datetime
 import jishaku
+import datetime
 
 from discord.ext import commands
 

@@ -5,6 +5,7 @@ import typing
 import box
 import json
 import nekos
+import requests
 
 from discord.ext import commands
 from dadjokes import Dadjoke
@@ -59,17 +60,6 @@ class Misc(commands.Cog):
 		title = data.title
 		embed = discord.Embed(title=title, color=discord.Color.blurple())
 		embed.set_image(url=img)
-		await ctx.send(embed=embed)
-		
-	@commands.command()
-	async def cat(self, ctx):
-		"""Sends you random cat image"""
-		r = await self.session.get("http://aws.random.cat/meow")
-		r = await r.json()
-		r = box.Box(r)
-		url = r.file
-		embed = discord.Embed(title=":cat: ~meow~", colour=discord.Colour.blurple())
-		embed.set_image(url=url)
 		await ctx.send(embed=embed)
 		
 	@commands.command()

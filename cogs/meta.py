@@ -3,14 +3,16 @@ import asyncio
 import time
 import itertools
 import platform
-import psutil
 import datetime
+import requests
 import sys
 import os
 import inspect
 
 from discord.ext import commands
 from random import choice
+from googletrans import Translator
+from .utils import languages
 from .utils.paginator import Pages
 
 class HelpPaginator(Pages):
@@ -177,10 +179,10 @@ class PaginatedHelpCommand(commands.HelpCommand):
 
 class Meta(commands.Cog):
     """Commands for utilities related to bot and discord"""
-
+    
     def __init__(self, bot):
         self.bot = bot
-        self.process = psutil.Process(os.getpid())
+        self.translator = Translator()
         self.old_help_command = bot.help_command
         bot.help_command = PaginatedHelpCommand()
         bot.help_command.cog = self
@@ -188,16 +190,6 @@ class Meta(commands.Cog):
 
     def cog_unload(self):
         self.bot.help_command = self.old_help_command
-        
-    colors = [
-    	discord.Color.dark_green(),
-    	discord.Color.blurple(),
-    	discord.Color.magenta(),
-    	discord.Color.purple(),
-    	discord.Color.blue(),
-    	discord.Color.teal(),
-    	discord.Color.red()
-    	]
        
     @commands.command()
     async def ping(self, ctx):
@@ -250,8 +242,6 @@ class Meta(commands.Cog):
     	bot = self.bot
     	uptime = self.get_uptime(brief=True)
     	plat = platform.python_version()
-    	cpu = psutil.cpu_percent()
-    	ram = self.process.memory_full_info().rss / 1024**2
     	users = len(bot.users)
     	guilds = len(bot.guilds)
     	textc = 0
@@ -267,7 +257,7 @@ class Meta(commands.Cog):
     	embed.title = 'Official server of C02'
     	embed.add_field(name="Developer", value="<@675261346669002752>")
     	embed.add_field(name="Stats", value=f"Used By - {users}\nGuilds - {guilds}\nLibrary - discord.py({discord.__version__})\nText Channels - {textc}\nVoice Channels - {voicec}\nUptime - {uptime}")
-    	embed.add_field(name="System Stats", value=f"Python Version - {plat}\nCommands - {len(bot.commands)}\nPlatform - {sys.platform}\nCPU - {cpu}%\nRAM - {ram:.2f} mb")
+    	embed.add_field(name="System Stats", value=f"Python Version - {plat}\nCommands - {len(bot.commands)}\nPlatform - {sys.platform}")
     	await ctx.send(embed=embed)
     	
     @commands.command()
@@ -370,6 +360,89 @@ class Meta(commands.Cog):
     	embed.add_field(name="Feedback", value=message)
     	await ch.send(embed=embed)
     	await ctx.send(":white_check_mark:")
+    	
+    @commands.group(invoke_without_command=True)
+    async def github(self, ctx):
+    	"""Commands related to github"""
+    	await ctx.send_help(ctx.command)
+    	
+    @github.command()
+    async def userinfo(self, ctx, *, github_username=None):
+    	"""Shows username github stats"""
+    	if not github_username:
+    		await ctx.send("No username provided")
+    		await ctx.message.add_reaction('\N{NO ENTRY SIGN}')
+    	else:
+    		r = requests.get(f"https://api.github.com/users/{github_username}")
+    		resp = r.json()
+    		name = resp['login']
+    		id = resp['id']
+    		avatar_url = resp['avatar_url']
+    		turl = resp['html_url']
+    		bio = resp['bio']
+    		repos = resp['public_repos']
+    		gists = resp['public_gists']
+    		followers = resp['followers']
+    		created = resp['created_at']
+    		
+    		embed = discord.Embed(title=name, url=turl, description=bio, color=ctx.author.color)
+    		embed.add_field(name='ID', value=id)
+    		embed.add_field(name='Repos', value=repos)
+    		embed.add_field(name='Gists', value=gists)
+    		embed.add_field(name='Followers', value=followers)
+    		embed.add_field(name='Created', value=created)
+    		embed.set_thumbnail(url=avatar_url)
+    		embed.set_footer(text=f'Requested by {ctx.author} | {ctx.message.created_at.strftime("%a, %#d %B %Y, %I:%M %p UTC")}')
+    		await ctx.send(embed=embed)
+    		
+    @github.command()
+    async def repoinfo(self, ctx, owner, *, reponame):
+    	"""Shows the repoinfo of the given repo"""
+    	if not owner and reponame:
+    		await ctx.send("No Owner/Repository name provided")
+    		await ctx.message.add_reaction("\N{NO ENTRY SIGN}")
+    	else:
+    		r = requests.get(f"https://api.github.com/repos/{owner}/{reponame}")
+    		r = r.json()
+    		tname = r["full_name"]
+    		turl = r["html_url"]
+    		id = r["id"]
+    		tdesc = r["description"]
+    		owner = r["owner"]["login"]
+    		size = r["size"]
+    		stars = r["stargazers_count"]
+    		watchs = r["watchers_count"]
+    		lang = r["language"]
+    		forks = r["forks_count"]
+    		subscribers = r["subscribers_count"]
+    		license = r["license"]["name"]
+    		oissues = r["open_issues"]
+    		
+    		embed = discord.Embed()
+    		embed.title = tname
+    		embed.url = turl
+    		embed.color = 0x00ffff
+    		embed.description = tdesc
+    		embed.add_field(name="ID", value=id)
+    		embed.add_field(name="Owner", value=owner)
+    		embed.add_field(name="Language", value=lang)
+    		embed.add_field(name="Size", value=size)
+    		embed.add_field(name="Forks", value=forks)
+    		embed.add_field(name="Stargazers", value=stars)
+    		embed.add_field(name="Watchers", value=watchs)
+    		embed.add_field(name="Subscribers", value=subscribers)
+    		embed.add_field(name="Open Issues", value=oissues)
+    		embed.add_field(name="License", value=license)
+    		await ctx.send(embed=embed)
+    		
+    @commands.command()
+    async def translate(self, ctx, *, message):
+    	"""Translate the given message to english"""
+    	tcont = self.translator.translate(message)
+    	embed = discord.Embed()
+    	embed.color = 0x00ffff
+    	embed.description = tcont.text
+    	await ctx.send(embed=embed)
     	
     @commands.command()
     async def beta(self, ctx):
