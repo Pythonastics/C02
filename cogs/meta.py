@@ -3,6 +3,7 @@ import asyncio
 import time
 import itertools
 import platform
+import psutil
 import datetime
 import sys
 import os
@@ -33,7 +34,7 @@ class HelpPaginator(Pages):
         self.embed.title = self.title
 
         if self.is_bot:
-            value ='For more help, join the official bot support server: https://discord.gg/DczdP8T'
+            value ='For more help, join the official bot support server: https://discord.gg/2Vv3dct'
             self.embed.add_field(name='Support', value=value, inline=False)
 
         self.embed.set_footer(text=f'Use "{self.prefix}help command" for more info on a command.')
@@ -179,6 +180,7 @@ class Meta(commands.Cog):
 
     def __init__(self, bot):
         self.bot = bot
+        self.process = psutil.Process(os.getpid())
         self.old_help_command = bot.help_command
         bot.help_command = PaginatedHelpCommand()
         bot.help_command.cog = self
@@ -217,7 +219,7 @@ class Meta(commands.Cog):
     @commands.command()
     async def source(self, ctx):
     	"""Display my source code url"""
-    	await ctx.send("https://github.com/devhubyt/venus")
+    	await ctx.send("https://github.com/mischievousdev/C02")
     	
     @commands.command(hidden=True)
     @commands.is_owner()
@@ -248,6 +250,8 @@ class Meta(commands.Cog):
     	bot = self.bot
     	uptime = self.get_uptime(brief=True)
     	plat = platform.python_version()
+    	cpu = psutil.cpu_percent()
+    	ram = self.process.full_memory_info.uss / 1024**2
     	users = len(bot.users)
     	guilds = len(bot.guilds)
     	textc = 0
@@ -263,7 +267,7 @@ class Meta(commands.Cog):
     	embed.title = 'Official server of C02'
     	embed.add_field(name="Developer", value="<@675261346669002752>")
     	embed.add_field(name="Stats", value=f"Used By - {users}\nGuilds - {guilds}\nLibrary - discord.py({discord.__version__})\nText Channels - {textc}\nVoice Channels - {voicec}\nUptime - {uptime}")
-    	embed.add_field(name="System Stats", value=f"Python Version - {plat}\nCommands - {len(bot.commands)}\nPlatform - {sys.platform}")
+    	embed.add_field(name="System Stats", value=f"Python Version - {plat}\nCommands - {len(bot.commands)}\nPlatform - {sys.platform}\nCPU - {cpu}%\nRAM - {ram:.2f} mb")
     	await ctx.send(embed=embed)
     	
     @commands.command()
