@@ -12,7 +12,6 @@ import inspect
 from discord.ext import commands
 from random import choice
 from googletrans import Translator
-from .utils import languages
 from .utils.paginator import Pages
 
 class HelpPaginator(Pages):
