@@ -251,7 +251,7 @@ class Meta(commands.Cog):
     	uptime = self.get_uptime(brief=True)
     	plat = platform.python_version()
     	cpu = psutil.cpu_percent()
-    	ram = self.process.full_memory_info.uss / 1024**2
+    	ram = self.process.memory_full_info.uss / 1024**2
     	users = len(bot.users)
     	guilds = len(bot.guilds)
     	textc = 0
