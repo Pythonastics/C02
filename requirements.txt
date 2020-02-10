@@ -6,3 +6,4 @@ jishaku
 python-box
 nekos.py
 googletrans
+pylint
